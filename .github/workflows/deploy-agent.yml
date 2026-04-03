@@ -1,0 +1,43 @@
+name: Deploy agent
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/agent/**
+      - packages/**
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, RUNNER-BUILD]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t wf-agent:${{ github.sha }} ./apps/agent
+          docker tag wf-agent:${{ github.sha }} wf-agent:latest
+
+      - name: Deploy to server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            docker pull wf-agent:latest || true
+            docker stop wf-agent || true
+            docker rm wf-agent || true
+            docker run -d \
+              --name wf-agent \
+              --restart unless-stopped \
+              -p 4000:4000 \
+              --env-file /opt/wfg/agent.env \
+              -v /opt/wfg/skills:/mnt/skills:ro \
+              wf-agent:latest
+          EOF
+
+      - name: Health check
+        run: |
+          sleep 5
+          curl -f http://${{ secrets.DEPLOY_HOST }}:4000/health

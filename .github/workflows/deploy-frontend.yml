@@ -1,0 +1,43 @@
+name: Deploy frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/frontend/**
+      - packages/types/**
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, RUNNER-BUILD]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm --filter @wfg/frontend build
+        env:
+          AGENT_URL: ${{ secrets.AGENT_URL }}
+
+      - name: Deploy to server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          rsync -az --delete apps/frontend/.next/ \
+            ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}:/opt/wfg/frontend/.next/
+          ssh ${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }} "pm2 restart wf-frontend || pm2 start 'pnpm start' --name wf-frontend --cwd /opt/wfg/frontend"
+
+      - name: Health check
+        run: curl -f http://${{ secrets.DEPLOY_HOST }}:3000
