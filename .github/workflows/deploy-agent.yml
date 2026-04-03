@@ -1,11 +1,7 @@
 name: Deploy agent
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - apps/agent/**
-      - packages/**
+  workflow_dispatch:
 
 jobs:
   deploy:
