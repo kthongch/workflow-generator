@@ -7,8 +7,9 @@ AI-powered CI/CD workflow generator — drop any deployment file, get a workflow
 ```bash
 pnpm install
 cp apps/agent/.env.example apps/agent/.env
-# Edit: ANTHROPIC_API_KEY, SKILLS_PATH
-# Edit: GHES_URL, GHES_BOT_TOKEN, TARGET_REPO
+cp apps/frontend/.env.local.example apps/frontend/.env.local
+# Edit apps/agent/.env:    ANTHROPIC_API_KEY, SKILLS_PATH, GHES_URL, GHES_BOT_TOKEN, TARGET_REPO
+# Edit apps/frontend/.env.local: AGENT_URL=http://localhost:4000
 
 # Terminal 1 — agent
 cd apps/agent && node --import tsx/esm src/server.ts
@@ -39,8 +40,8 @@ Step 4  generate YAML   Sonnet — streaming output
 Step 5  validate + fix  Sonnet — lint + AI fix loop (max 3×)
 [GATE 2 — user approves diff]
 Step 6  open PR         Octokit → GitHub.com or GHES
-Step 7  AI self-eval    Haiku  — score 0-10, update pattern store
-Step 8  learn           Sonnet — write draft skill if source unknown
+Step 7  self-eval       Haiku  — score output 0–10, update pattern store
+Step 8  learn           Sonnet — write draft skill if input source is unknown
 ```
 
 ## Skills (open-ended)
@@ -103,6 +104,7 @@ pm2 save && pm2 startup
 
 ```bash
 docker-compose up
+# skills/ is mounted read-only; job data persists in a named volume
 ```
 
 ## Skill lifecycle
