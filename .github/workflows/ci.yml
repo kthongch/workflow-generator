@@ -1,11 +1,11 @@
 # .github/workflows/ci.yml
-# Runs on every PR — lint + typecheck + test
+# Disabled automatic triggers until self-hosted runner is available.
+# Run manually via: Actions → CI → Run workflow
 
 name: CI
 
 on:
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   ci:
