@@ -1,0 +1,61 @@
+version: '3.9'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - AGENT_URL=http://agent:4000
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - AUTH_ENABLED=${AUTH_ENABLED:-false}
+    depends_on:
+      agent:
+        condition: service_healthy
+    networks:
+      - wfg-net
+    restart: unless-stopped
+
+  agent:
+    build:
+      context: .
+      dockerfile: apps/agent/Dockerfile
+    ports:
+      - '4000:4000'
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - SKILLS_PATH=/mnt/skills
+      - DB_PATH=/mnt/data/jobs.db
+      - MAX_FIX_RETRIES=3
+      - AUTH_ENABLED=${AUTH_ENABLED:-false}
+      - KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GHES_URL=${GHES_URL}
+      - GHES_BOT_TOKEN=${GHES_BOT_TOKEN}
+      - TARGET_REPO=${TARGET_REPO}
+      - SKILLS_REPO=${SKILLS_REPO}
+    volumes:
+      - ./skills:/mnt/skills:ro
+      - wfg-data:/mnt/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - wfg-net
+    restart: unless-stopped
+
+volumes:
+  wfg-data:
+
+networks:
+  wfg-net:
+    driver: bridge
