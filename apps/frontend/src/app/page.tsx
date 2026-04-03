@@ -197,7 +197,7 @@ function Gate2Modal({ yamlDiff, impact, onApprove, onReject }: { yamlDiff: strin
     <div style={{ position: "fixed" as const, inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
       <div style={{ background: "#fff", borderRadius: 14, padding: 28, maxWidth: 700, width: "90%", maxHeight: "85vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
         <div style={{ fontSize: 16, fontWeight: 700, color: "#111827", marginBottom: 3 }}>Approve PR creation</div>
-        <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 20 }}>Review generated workflow before pushing to GHES</div>
+        <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 20 }}>Review generated workflow before pushing to repository</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 16 }}>
           {[
             { l: "Files", v: String(impact.workflowFiles.length) },
