@@ -1,11 +1,7 @@
 name: Deploy frontend
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - apps/frontend/**
-      - packages/types/**
+  workflow_dispatch:
 
 jobs:
   deploy:
